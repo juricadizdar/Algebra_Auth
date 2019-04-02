@@ -2,6 +2,8 @@
 	include_once 'core/init.php';
 	
 	Helper::getHeader('header', 'Home');
+	
+	include_once 'includes/notifications.php';
 ?>
 	
 			<div class="row">

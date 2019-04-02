@@ -1,13 +1,14 @@
 <?php 
-	include_once 'core/init.php';	
+	include_once 'core/init.php';
 	
-	Helper::getHeader('header', 'User Registration');
+	//$user = new User();
 	
 	$validation = new Validation();
 	
 	if(Request::exists('post')){
-		
-		$validate = $validation->check([
+	
+		if(Token::check(Request::getPost('CSRF_token'))){
+			$validate = $validation->check([
 			'name' => [
 				'required' => true,
 				'min' => 2,
@@ -28,11 +29,39 @@
 			]
 		]);
 		
+		if ($validate->getPassed()){
+			$salt = Hash::salt(32);
+			
+			$userData = [
+				'username' => Request::getPost('username'),
+				'password' => Hash::make(Request::getPost('password'), $salt),
+				'salt' => $salt,
+				'name' => Request::getPost('name')
+			];
+			
+			try{
+				//$user->create($userData);
+				throw new Exception ('There was a problem creating new user!');
+			}catch(Exception $e){
+				Session::flash('danger', $e->getMessage());
+				Redirect::to('register');
+			}
+			
+			
+			Session::flash('success','You are registered successfully!');
+			Redirect::to(404);
+		}
+		
+		}
 		//dd($validate->getErrors());
 		//dump($validate->getPassed());
 		//$name = Request::getPost('name');
 		//dump($name);
 	}
+	
+	Helper::getHeader('header', 'User Registration');
+	
+	include_once 'includes/notifications.php';
 ?>
 
 <div class="row">
@@ -43,6 +72,7 @@
 		  </div>
 		  <div class="card-body">			
 			<form method="post">
+				<input type="hidden" name="CSRF_token" value="<?php echo Token::generate();?>">
 				 <div class="form-group">
 					<label for="name">Name*</label>
 					<input type="text" class="form-control" id="name" name="name" placeholder="Enter your Name">

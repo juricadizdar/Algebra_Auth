@@ -243,9 +243,3 @@ class DB
 		return $this->results[0];
 	}
 }
-
-
-
-
-
-
