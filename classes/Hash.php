@@ -4,9 +4,9 @@ class Hash
 {
 	private function __construct(){}
 	
-	public static function salt($length)
+	public static function salt($length=null)
 	{
-		return random_bytes($length);
+		return uniqid('',true);
 	}
 	
 	public static function make($string, $salt='')

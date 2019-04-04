@@ -13,47 +13,26 @@
 	
 		if(Token::check(Request::getPost('CSRF_token'))){
 			$validate = $validation->check([
-			'name' => [
-				'required' => true,
-				'min' => 2,
-				'max' => 50
-			],
 			'username' => [
 				'required' => true,
-				'min' => 2,
-				'max' => 50,
-				'unique' => 'users' 
 			],
 			'password' => [
 				'required' => true,
-				'min' => 10
-			],
-			'confirmPassword' => [
-				'match' => 'password'
 			]
 		]);
 		
 		if ($validate->getPassed()){
-			$salt = Hash::salt(32);
+			$username = Request::getPost('username');
+			$password = Request::getPost('password');
 			
-			$userData = [
-				'username' => Request::getPost('username'),
-				'password' => Hash::make(Request::getPost('password'), $salt),
-				'salt' => $salt,
-				'name' => Request::getPost('name')
-			];
 			
-			try{
-				$user->create($userData);
-				//throw new Exception ('There was a problem creating new user!');
-			}catch(Exception $e){
-				Session::flash('danger', $e->getMessage());
-				Redirect::to('register');
+			if($user->login($username, $password)){
+				Redirect::to('dashbord');
+			} else {
+				Session::flash('danger', 'Sorry, login failed! Please try again.');
+				Redirect::to('login');
 			}
 			
-			
-			Session::flash('success','You are registered successfully!');
-			Redirect::to('login');
 		}
 		
 		}
@@ -63,7 +42,7 @@
 		//dump($name);
 	}
 	
-	Helper::getHeader('header', 'User Registration');
+	Helper::getHeader('header', 'User Login');
 	
 	include_once 'includes/notifications.php';
 ?>
@@ -72,16 +51,11 @@
 	<div class="clo-md-4 offset-md-4">
 		<div class="card">
 		  <div class="card-header">
-			<h5 class="card-title">User Registration</h5>
+			<h5 class="card-title">User Login</h5>
 		  </div>
 		  <div class="card-body">			
 			<form method="post">
 				<input type="hidden" name="CSRF_token" value="<?php echo Token::generate();?>">
-				 <div class="form-group">
-					<label for="name">Name*</label>
-					<input type="text" class="form-control" id="name" name="name" placeholder="Enter your Name">
-					<?php echo $validation->hasError('name') ? '<p class="text-danger">'.$validation->hasError('name').'</p>': '' ?>
-				 </div>
 				 
 				 <div class="form-group">
 					<label for="username">Username*</label>
@@ -95,13 +69,7 @@
 					<?php echo $validation->hasError('password') ? '<p class="text-danger">'.$validation->hasError('password').'</p>': '' ?>
 				 </div>
 				 
-				 <div class="form-group">
-					<label for="confirmPassword">Confirm Password*</label>
-					<input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Confirm your Password">
-					<?php echo $validation->hasError('confirmPassword') ? '<p class="text-danger">'.$validation->hasError('confirmPassword').'</p>': '' ?>
-				 </div>
-				 
-				 <button class="btn btn-primary">Confirm your action</button>
+				 <button class="btn btn-primary">LogIn</button>
 			</form>
 		  </div>
 		</div>
